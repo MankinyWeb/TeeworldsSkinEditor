@@ -4,13 +4,20 @@ from PIL import Image
 
 import tkinter.filedialog
 
-BODY = [1, 0, 5, 5]
-BODYMASK = [7, 0, 11, 5]
-HAND = [12, 0, 14, 2]
-HANDMASK = [14, 0, 16, 2]
-FEET = [12, 2, 16, 4]
-FEETMASK = [12, 4, 16, 6]
-EMOS = [4, 6, 16, 8]
+PARTS = {}
+
+PARTS ["BODY"] = [1, 0, 5, 5]
+PARTS ["BODYMASK"] = [7, 0, 11, 5]
+PARTS ["HAND"] = [12, 0, 14, 2]
+PARTS ["HANDMASK"] = [14, 0, 16, 2]
+PARTS ["FEET"] = [12, 2, 16, 4]
+PARTS ["FEETMASK"] = [12, 4, 16, 6]
+PARTS ["EMO1"] = [4, 6, 6, 8]
+PARTS ["EMO2"] = [6, 6, 8, 8]
+PARTS ["EMO3"] = [8, 6, 10, 8]
+PARTS ["EMO4"] = [10, 6, 12, 8]
+PARTS ["EMO5"] = [12, 6, 14, 8]
+PARTS ["EMO6"] = [14, 6, 16, 8]
 
 def draw_rounded_rectangle (canvas, x1, y1, x2, y2, radius, **kwargs):
     points = [
@@ -44,8 +51,8 @@ def FileOpen():
         filetypes = [('All files', '*')]
     )
     
-teePath = ".\\测试Tee-Manga.png"
-tee = Image. open (".\\测试Tee-Manga.png"). resize ((256, 128))
+teePath = ".\\测试Tee-Tsumugi.png"
+tee = Image. open (".\\测试Tee-Tsumugi.png"). resize ((512, 256))
 
 def showImage (img, x, y, scale = 1):
     photo = ImageTk. PhotoImage (img. resize ((int (img. size [0] * scale), int (img. size [1] * scale))))
@@ -73,7 +80,7 @@ def showTee (img, x, y):
     tees. append (
         showImage (
             img. crop (
-                DoOffest (FEET, img. size)
+                DoOffest (PARTS ["FEET"], img. size)
             ),
             x - feetOffest1 [0], 
             y - feetOffest1 [1],
@@ -81,15 +88,15 @@ def showTee (img, x, y):
         )
     )
 
-    tees. append (showImage (img. crop (DoOffest (BODYMASK, img. size)), x, y))
-    tees. append (showImage (img. crop (DoOffest (BODY, img. size)), x, y))
+    tees. append (showImage (img. crop (DoOffest (PARTS ["BODYMASK"], img. size)), x, y))
+    tees. append (showImage (img. crop (DoOffest (PARTS ["BODY"], img. size)), x, y))
 
     feetOffest2 = [-32, -64]
 
     tees. append (
         showImage (
             img. crop (
-                DoOffest (FEET, img. size)
+                DoOffest (PARTS ["FEET"], img. size)
             ),
             x - feetOffest2 [0], 
             y - feetOffest2 [1],
@@ -137,6 +144,44 @@ round_rectangle (16, 16, 512, 256, 25, fill = "#163637", outline = "#163637", wi
 round_rectangle (600, 16, 950, 500, 25, fill = "#163637", outline = "#163637", width = 2)
 
 Button (root, text = "读取皮肤文件", command = open_tee). place (x = 0, y = 0)
+
+chooses = ["BODY", "BODYMASK", "FEET", "FEETMASK", "EMO1", "EMO2", "EMO3", "EMO4", "EMO5", "EMO6", "HAND", "HANDMASK"]
+
+nowChoose = ""
+lastChoose = ""
+
+choosePart = ttk. Combobox(
+    master = root,
+    values = chooses,
+    textvariable = nowChoose
+)
+
+partImg = tee
+
+def changePart (x):
+    global partImg, lastChoose, nowChoose
+
+    nowChoose = choosePart. get ()
+
+    if (PARTS. get (lastChoose, -1) != -1):
+        tee. paste (partImg, (int (DoOffest (PARTS [lastChoose], tee. size) [0]), int(DoOffest (PARTS [lastChoose], tee. size) [1])))
+
+    partImg = tee. crop (DoOffest (PARTS [nowChoose], tee. size))  
+
+    lastChoose = nowChoose
+
+    showTee (tee, tee. size [0] / 2, tee. size [1] / 2)
+
+    showPart (775, 230)
+
+choosePart. bind ('<<ComboboxSelected>>', changePart)
+
+choosePart. place (x = 337, y = 300)
+
+def showPart (x, y):
+    global partImg
+
+    tees. append (showImage (partImg, x, y))
 
 cav. place (x = 32, y = 32)
 
