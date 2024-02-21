@@ -3,6 +3,11 @@ from ttkbootstrap import *
 from PIL import Image
 
 import tkinter.filedialog
+import platform
+import os
+import subprocess
+
+userPlatform = platform .system ()
 
 PARTS = {}
 
@@ -31,8 +36,10 @@ SHOWPOS ["EMO"] = [1.1, -16, 8, -24]
 
 nowemo = "EMO1"
 
-root = Window(
-        title = 'Teeworlds Editor Skin',      
+name = "unnamed tee"
+
+root = Window (
+        title = 'Teeworlds skin-Editee',      
         themename = "solar",    
         size = (1920, 1080),      
         position = (0, 0),   
@@ -49,7 +56,7 @@ show. configure (bg = "#163637")
 
 def FileOpen():
     return tkinter. filedialog. askopenfilename (
-        title = 'Teeworlds Editor Skin',
+        title = 'Teeworlds skin-Editee',
         filetypes = [('All files', '*')]
     )
 
@@ -116,6 +123,17 @@ def DoOffest (i, size):
     )
 
 tees = []
+
+def saveTee ():
+    name = askname. get ('1.0', END)
+
+    tee. save (
+        tkinter. filedialog. asksaveasfilename (
+            title = 'Teeworlds skin-Editee',
+            filetypes = [('PNG files', '.png')],
+            initialfile = name + '.png'
+        )
+    )
 
 def showTee (img, x, y, alpha = 1, c = cav, scale = 1, nowchoose = "", emo = 1):
     global tees
@@ -204,8 +222,12 @@ def showTee (img, x, y, alpha = 1, c = cav, scale = 1, nowchoose = "", emo = 1):
         )
     )
 
+askname = tk. Text (root, font = ("Fira Code", 16), width = 15, height = 1)
+
+askname. place (x = 48 + 128, y = 300 + 64 + 32 - 8)
+
 def open_tee ():
-    global teePath, tee, partImg, nowChoose, lastChoose
+    global teePath, tee, partImg, nowChoose, lastChoose, emos, name, askname
 
     teePath = FileOpen ()
 
@@ -215,16 +237,24 @@ def open_tee ():
 
     partImg = tee
 
-    nowChoose = -1
+    choosePart. set ("BODY")
     lastChoose = -1
+
+    chooseEMO. set ("EMO1")
+
+    name = os. path. basename (teePath). split ('.') [-2]
+
+    askname. insert ('0.0', name)
     
-    showTee (tee, tee. size [0] / 2, tee. size [1] / 2)
+    changePart ()
 
 round_rectangle (cav, 16, 16, 512, 256, 25, fill = "#163637", outline = "#163637", width = 2)
 
 menu = Menu (root)
 
 menu. add_command (label = "读取", command = open_tee)
+
+menu. add_command (label = "保存", command = saveTee)
 
 menu. config (background = "#163637")
 
@@ -332,5 +362,34 @@ afs. set (0.5)
 afs.place (x = 600, y = 48 + 512 + 16 + 100)
 afstext = Label (text = "其他部分透明度 {0.00 ~ 1.00} 0.50", font = ("Fira Code", 16))
 afstext. place (x = 832, y = 48 + 512 + 8 + 100)
+
+def edit ():
+    fileDir = "tmp.png"
+
+    global partImg
+
+    partImg. save (fileDir)
+
+    if userPlatform == 'Darwin':		
+        subprocess. call(['open', fileDir])
+    elif userPlatform == 'Linux':						
+        subprocess. call(['xdg-open', fileDir])
+    else:												
+        os. startfile(fileDir)
+
+def load ():
+    fileDir = "tmp.png"
+
+    global partImg
+
+    partImg = Image. open (fileDir)
+
+    changePart ()
+
+tk. Button (root, text = "编辑这一部分", command = edit, font = ("Fira Code", 16)). place (x = 600 + 1024 + 50, y = 48)
+
+tk. Button (root, text = "读取修改部分", command = load, font = ("Fira Code", 16)). place (x = 600 + 1024 + 50, y = 48 + 64)
+
+tk. Label (root, text = "皮肤名", font = ("Fira Code", 16)). place (x = 48, y = 300 + 32 + 64)
 
 root. mainloop ()
